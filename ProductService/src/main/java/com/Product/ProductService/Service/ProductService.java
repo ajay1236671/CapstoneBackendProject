@@ -2,7 +2,9 @@ package com.Product.ProductService.Service;
 
 import com.Product.ProductService.Model.Product;
 import com.Product.ProductService.Repository.ProductRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -10,9 +12,11 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final RestTemplate restTemplate;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, RestTemplate restTemplate) {
         this.productRepository = productRepository;
+        this.restTemplate = restTemplate;
     }
 
     public List<Product> getAllProducts() {
@@ -24,7 +28,13 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
-    public Product saveProduct(Product product) {
+    public Product saveProduct(Product product, String userName) {
+        String userServiceUrl = "http://localhost:8082/users/" + userName;
+        Boolean isUserValid = restTemplate.getForObject(userServiceUrl, Boolean.class);
         return productRepository.save(product);
+    }
+
+    public void deleteProduct(Long id) {
+        productRepository.deleteById(id);
     }
 }

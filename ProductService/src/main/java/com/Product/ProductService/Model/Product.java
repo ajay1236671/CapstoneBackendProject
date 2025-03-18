@@ -1,7 +1,12 @@
 package com.Product.ProductService.Model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,11 +17,4 @@ public class Product extends BaseModel {
     private String title;
     private double price;
     private String description;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-    private String imageUrl;
-    private boolean isPublic;
 }

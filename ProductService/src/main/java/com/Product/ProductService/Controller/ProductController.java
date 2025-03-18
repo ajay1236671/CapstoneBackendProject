@@ -3,6 +3,7 @@ package com.Product.ProductService.Controller;
 
 import com.Product.ProductService.Model.Product;
 import com.Product.ProductService.Service.ProductService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -26,9 +27,15 @@ public class ProductController {
         return productService.getProductById(id);
     }
 
-    @PostMapping
-    public Product createProduct(@RequestBody Product product) {
-        return productService.saveProduct(product);
+    @PostMapping("/{username}")
+    public Product createProduct(@RequestBody Product product, @PathVariable String username) {
+        return productService.saveProduct(product, username);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+         productService.deleteProduct(id);
+         return ResponseEntity.ok(id);
     }
 }
 
