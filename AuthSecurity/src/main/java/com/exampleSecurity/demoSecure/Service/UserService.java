@@ -1,18 +1,29 @@
 package com.exampleSecurity.demoSecure.Service;
 
+import com.exampleSecurity.demoSecure.Dtos.RegisterUserDto;
+import com.exampleSecurity.demoSecure.Repository.RoleRepository;
 import com.exampleSecurity.demoSecure.Repository.UserRepository;
+import com.exampleSecurity.demoSecure.entities.Role;
+import com.exampleSecurity.demoSecure.entities.RoleEnum;
 import com.exampleSecurity.demoSecure.entities.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
-    public UserService(UserRepository userRepository) {
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> allUsers() {
@@ -21,5 +32,21 @@ public class UserService {
         userRepository.findAll().forEach(users::add);
 
         return users;
+    }
+
+    public User createAdministrator(RegisterUserDto input) {
+        Optional<Role> optionalRole = roleRepository.findByName(RoleEnum.ADMIN);
+
+        if (optionalRole.isEmpty()) {
+            return null;
+        }
+
+        User user = new User();
+        user.setFullName(input.getFullName());
+        user.setEmail(input.getEmail());
+        user.setPassword(passwordEncoder.encode(input.getPassword()));
+        user.setRole(optionalRole.get());
+
+        return userRepository.save(user);
     }
 }
