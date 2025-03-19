@@ -41,5 +41,15 @@ public class AuthController {
 
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
+
+    @PostMapping("/validateToken")
+    public ResponseEntity<Boolean> validateToken(@RequestBody String token) {
+        try {
+            jwtUtil.validateToken(token);
+            return ResponseEntity.ok(true);
+        } catch (Exception e) {
+            return ResponseEntity.ok(false);
+        }
+    }
 }
 
