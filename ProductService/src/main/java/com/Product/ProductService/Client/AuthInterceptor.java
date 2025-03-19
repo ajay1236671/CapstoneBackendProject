@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -46,15 +47,32 @@ public class AuthInterceptor implements HandlerInterceptor {
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(Map.of("token", token), headers);
 
         ResponseEntity<Map> validationResponse = restTemplate.postForEntity("http://localhost:8888/auth/validate", requestEntity, Map.class);
-
-        if (validationResponse.getStatusCode() == HttpStatus.OK && Boolean.TRUE.equals(validationResponse.getBody().get("valid"))) {
+        String errorMsg = "Invalid token";
+        if (validationResponse.getStatusCode() == HttpStatus.OK && Boolean.TRUE.equals(validationResponse.getBody().get("valid")) &&
+                checkRoles(validationResponse.getBody().get("roles"), request.getRequestURI(), request.getMethod(), errorMsg)) {
             request.setAttribute("userId", validationResponse.getBody().get("userId"));
             request.setAttribute("roles", validationResponse.getBody().get("roles"));
             return true;
         } else {
-            response.sendError(HttpStatus.FORBIDDEN.value(), "Invalid token");
+            response.sendError(HttpStatus.FORBIDDEN.value(), errorMsg);
             return false;
         }
+    }
+
+
+    public boolean checkRoles(Object role, String requestURI, String method, String errorMessage) {
+        List<String> roles = (List<String>) role;
+        if ((requestURI.startsWith("/products") && method.equals("POST")) ||
+                (requestURI.startsWith("/products") && method.equals("PUT")) ||
+                (requestURI.startsWith("/products") && method.equals("DELETE"))) {
+
+            if (!roles.contains("ADMIN")) {
+                errorMessage = "Access denied: Requires ADMIN role";
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 
