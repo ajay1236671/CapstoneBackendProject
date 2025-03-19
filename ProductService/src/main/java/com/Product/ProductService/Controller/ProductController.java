@@ -27,6 +27,11 @@ public class ProductController {
         return productService.getProductById(id);
     }
 
+//    @GetMapping("/{id}")
+//    public String getProductById(@PathVariable String id, @RequestAttribute("userId") String userId) {
+//        return "Product details for ID: " + id + " accessed by User: " + userId;
+//    }
+
     @PostMapping("/{username}")
     public Product createProduct(@RequestBody Product product, @PathVariable String username) {
         return productService.saveProduct(product, username);

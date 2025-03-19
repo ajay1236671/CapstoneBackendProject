@@ -12,11 +12,9 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final RestTemplate restTemplate;
 
-    public ProductService(ProductRepository productRepository, RestTemplate restTemplate) {
+    public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
-        this.restTemplate = restTemplate;
     }
 
     public List<Product> getAllProducts() {
@@ -29,8 +27,8 @@ public class ProductService {
     }
 
     public Product saveProduct(Product product, String userName) {
-        String userServiceUrl = "http://localhost:8082/users/" + userName;
-        Boolean isUserValid = restTemplate.getForObject(userServiceUrl, Boolean.class);
+//        String userServiceUrl = "http://localhost:8082/users/" + userName;
+//        Boolean isUserValid = restTemplate.getForObject(userServiceUrl, Boolean.class);
         return productRepository.save(product);
     }
 
