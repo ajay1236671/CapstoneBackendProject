@@ -1,68 +1,56 @@
 package com.example.PaymentsService.Service.PaymentGateways;
 
 import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentLink;
 import com.stripe.model.Price;
+import com.stripe.model.Product;
+import com.stripe.param.PaymentLinkCreateParams;
+import com.stripe.param.PriceCreateParams;
+import com.stripe.param.ProductCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.objenesis.ObjenesisHelper;
 
 import java.util.*;
 
-public class stripePaymentGateway implements PaymentGateway {
+public class stripePaymentGateway implements PaymentGateway  {
     @Value("${stripe.key.secret}")
     private String apiKey;
 
-    @Override
-    public String generatePaymentLink(String orderId, String email, String phoneNumber, Long amount) {
-        Stripe.apiKey = apiKey;
+    public String generatePaymentLink(String orderId, Long amount) throws StripeException{
+        Stripe.apiKey = "sk_test_51PpwjmRwcLbnctZ8IQKuZ1RJnD20nyz6Fh0FvD985wApVhxkMPvHNtVzJa1rroOOgxpt9zwrhPfN2TuEgAX7JuDm00XaSbaCr7";
 
-//        Map<String, Object> recurring = new HashMap<>();
-//        recurring.put("interval", "month");
-        Map<String, Object> params = new HashMap<>();
-        params.put("unit_amount", amount);
-        params.put("currency", "inr");
-//        params.put("recurring", recurring);
-//        params.put("product", "prod_P2eyHe1yYpImlF");
-        Map<String, Object> productData = new HashMap<>();
-        productData.put("name", "Burnol");
-        params.put("product_data", productData);
+        ProductCreateParams productCreateParams =
+                ProductCreateParams.builder().setName("Gold Plan").build();
 
-        Price price = null;
-        try {
-            price = Price.create(params);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+        Product product = Product.create(productCreateParams);
 
-        List<Object> lineItems = new ArrayList<>();
-        Map<String, Object> lineItem1 = new HashMap<>();
-        lineItem1.put(
-                "price",
-                price.getId()
-        );
-        lineItem1.put("quantity", 1);
-        lineItems.add(lineItem1);
-        params = new HashMap<>();
-        params.put("line_items", lineItems);
+        PriceCreateParams params =
+                PriceCreateParams.builder()
+                        .setCurrency("inr")
+                        .setUnitAmount(amount)
+                        .setProduct(product.getId())
+                        .build();
 
-        Map<String, Object> afterCompletion = new HashMap<>();
-        afterCompletion.put("type", "redirect");
+        Price price = Price.create(params);
 
-        Map<String, Object> redirect = new HashMap<>();
-        redirect.put("url", "https://scaler.com?payment_id={CHECKOUT_SESSION_ID}");
-//        afterCompletion.put("redirect.url", "https://scaler.com");
 
-        afterCompletion.put("redirect", redirect);
+        PaymentLinkCreateParams paymentLinkCreateParams =
+                PaymentLinkCreateParams.builder()
+                        .addLineItem(
+                                PaymentLinkCreateParams.LineItem.builder()
+                                        .setPrice(price.getId())
+                                        .setQuantity(1L)
+                                        .build()
+                        )
+                        .setAfterCompletion(PaymentLinkCreateParams.AfterCompletion.builder()
+                                .setType(PaymentLinkCreateParams.AfterCompletion.Type.REDIRECT)
+                                .setRedirect(PaymentLinkCreateParams.AfterCompletion.Redirect.builder()
+                                        .setUrl("http://localhost:8080/webhook")
+                                        .build())
+                                .build()).build();
 
-        params.put("after_completion", afterCompletion);
-
-        PaymentLink paymentLink = null;
-        try {
-            paymentLink = PaymentLink.create(params);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        return paymentLink.getUrl().toString();
+        PaymentLink paymentLink = PaymentLink.create(paymentLinkCreateParams);
+        return paymentLink.getUrl();
     }
 }
