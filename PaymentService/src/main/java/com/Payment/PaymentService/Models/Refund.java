@@ -4,29 +4,35 @@ package com.Payment.PaymentService.Models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
 @Entity
+@Table(name = "refunds")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Refund {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "payment_id", nullable = false)
-    private Payment payment;
+    @Column(nullable = false)
+    private String paymentId;
 
     @Column(nullable = false)
-    private BigDecimal refundAmount;
+    private String refundId;
 
     @Column(nullable = false)
-    private String refundStatus;
+    private double amount;
 
-    private LocalDateTime refundedAt = LocalDateTime.now();
+    @Column(nullable = false)
+    private String status;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 }
+

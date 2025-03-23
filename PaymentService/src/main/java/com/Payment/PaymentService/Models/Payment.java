@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "payments")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Payment {
 
     @Id
@@ -25,5 +23,18 @@ public class Payment {
     private String status;
     private LocalDateTime timestamp;
 
+    public Payment() {
+
+    }
+
+    public Payment(Long id, String userId, String transactionId, Double amount, String currency, String status, LocalDateTime timestamp) {
+        this.id = id;
+        this.userId = userId;
+        this.transactionId = transactionId;
+        this.amount = amount;
+        this.currency = currency;
+        this.status = status;
+        this.timestamp = timestamp;
+    }
 }
 
