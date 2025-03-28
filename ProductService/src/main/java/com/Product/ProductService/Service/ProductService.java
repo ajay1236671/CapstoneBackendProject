@@ -2,6 +2,8 @@ package com.Product.ProductService.Service;
 
 import com.Product.ProductService.Model.Product;
 import com.Product.ProductService.Repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,13 +28,15 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
-    public Product saveProduct(Product product, String userName) {
-//        String userServiceUrl = "http://localhost:8082/users/" + userName;
-//        Boolean isUserValid = restTemplate.getForObject(userServiceUrl, Boolean.class);
-        return productRepository.save(product);
+    public Product saveProduct(Product product) {
+        return productRepository.save(product );
     }
 
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
+    }
+
+    public Page<Product> getProductsByCategory(String category, Pageable pageable) {
+        return productRepository.findByCategory(category, pageable);
     }
 }
