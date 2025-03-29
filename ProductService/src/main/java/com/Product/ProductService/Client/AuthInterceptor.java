@@ -45,11 +45,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         headers.set("Content-Type", "application/json");
         headers.set("TokenAuthorization", authHeader);
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(Map.of("token", token), headers);
-
-        ResponseEntity<Map> validationResponse = restTemplate.postForEntity("http://localhost:8888/auth/validate", requestEntity, Map.class);
+        String clientRequestUrl = System.getenv("AUTH_URL") + "/auth/validate" + checkForRoles(request.getRequestURI(), request.getMethod());
+        ResponseEntity<Map> validationResponse = restTemplate.postForEntity(clientRequestUrl, requestEntity, Map.class);
         String errorMsg = "Invalid token";
-        if (validationResponse.getStatusCode() == HttpStatus.OK && Boolean.TRUE.equals(validationResponse.getBody().get("valid")) &&
-                checkRoles(validationResponse.getBody().get("roles"), request.getRequestURI(), request.getMethod(), errorMsg)) {
+        if (validationResponse.getStatusCode() == HttpStatus.OK && Boolean.TRUE.equals(validationResponse.getBody().get("valid"))) {
             request.setAttribute("userId", validationResponse.getBody().get("userId"));
             request.setAttribute("roles", validationResponse.getBody().get("roles"));
             return true;
@@ -60,19 +59,14 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
 
-    public boolean checkRoles(Object role, String requestURI, String method, String errorMessage) {
-        List<String> roles = (List<String>) role;
+    public String checkForRoles(String requestURI, String method) {
         if ((requestURI.startsWith("/products") && method.equals("POST")) ||
                 (requestURI.startsWith("/products") && method.equals("PUT")) ||
                 (requestURI.startsWith("/products") && method.equals("DELETE"))) {
-
-            if (!roles.contains("ADMIN")) {
-                errorMessage = "Access denied: Requires ADMIN role";
-                return false;
-            }
+            return "/admin";
         }
 
-        return true;
+        return "";
     }
 }
 
