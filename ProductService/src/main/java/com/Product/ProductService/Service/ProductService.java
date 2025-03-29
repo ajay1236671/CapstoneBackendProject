@@ -32,19 +32,28 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+
     public Product getProductById(Long id) {
-        Product cacheProduct = (Product) redisTemplate.opsForHash().get(id, "PRODUCTS");
-        if (cacheProduct != null) {
-            return cacheProduct;
+        try {
+            Product cacheProduct = (Product) redisTemplate.opsForHash().get(id, "PRODUCTS");
+            if (cacheProduct != null) {
+                return cacheProduct;
+            }
+        } catch (Exception e) {
+            System.err.println("Redis is unavailable, proceeding without cache: " + e.getMessage());
         }
 
         Optional<Product> product = productRepository.findById(id);
-//        redisTemplate.opsForHash().put(id, "PRODUCTS", product.get());
         return product.map(p -> {
-            redisTemplate.opsForHash().put(id, "PRODUCTS", p);
+            try {
+                redisTemplate.opsForHash().put(id, "PRODUCTS", p);
+            } catch (Exception e) {
+                System.err.println("Failed to store product in Redis: " + e.getMessage());
+            }
             return p;
         }).orElseThrow(() -> new RuntimeException("Product not found"));
     }
+
 
     public Product saveProduct(Product product) {
 
