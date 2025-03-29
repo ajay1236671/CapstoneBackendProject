@@ -9,32 +9,34 @@ import com.stripe.param.PaymentLinkCreateParams;
 import com.stripe.param.PriceCreateParams;
 import com.stripe.param.ProductCreateParams;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.objenesis.ObjenesisHelper;
+import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Map;
 
-public class stripePaymentGateway implements PaymentGateway  {
-    @Value("${stripe.key.secret}")
-    private String apiKey;
+@Service
+public class stripePaymentGateway implements PaymentGateway {
+    private String apiKey = System.getenv("STRIPE_API_KEY");
+    private String successUrl = System.getenv("PRODUCT_URL") + "/order/failed";
+    private String failureUrl = System.getenv("PRODUCT_URL") + "/order/success";
 
-    public String generatePaymentLink(String orderId, Long amount) throws StripeException{
-        Stripe.apiKey = "sk_test_51PpwjmRwcLbnctZ8IQKuZ1RJnD20nyz6Fh0FvD985wApVhxkMPvHNtVzJa1rroOOgxpt9zwrhPfN2TuEgAX7JuDm00XaSbaCr7";
+    public Map<String, String> generatePaymentLink(Long orderId, double amount) throws StripeException {
+        Stripe.apiKey = apiKey;
 
+        // Create Product
         ProductCreateParams productCreateParams =
-                ProductCreateParams.builder().setName("Gold Plan").build();
-
+                ProductCreateParams.builder().setName("Order #" + orderId).build();
         Product product = Product.create(productCreateParams);
 
-        PriceCreateParams params =
+        // Create Price
+        PriceCreateParams priceCreateParams =
                 PriceCreateParams.builder()
                         .setCurrency("inr")
-                        .setUnitAmount(amount)
+                        .setUnitAmount((long) (amount * 100)) // Convert to paise
                         .setProduct(product.getId())
                         .build();
+        Price price = Price.create(priceCreateParams);
 
-        Price price = Price.create(params);
-
-
+        // Create Payment Link with Success & Failure URLs
         PaymentLinkCreateParams paymentLinkCreateParams =
                 PaymentLinkCreateParams.builder()
                         .addLineItem(
@@ -46,11 +48,18 @@ public class stripePaymentGateway implements PaymentGateway  {
                         .setAfterCompletion(PaymentLinkCreateParams.AfterCompletion.builder()
                                 .setType(PaymentLinkCreateParams.AfterCompletion.Type.REDIRECT)
                                 .setRedirect(PaymentLinkCreateParams.AfterCompletion.Redirect.builder()
-                                        .setUrl("http://localhost:8080/webhook")
+                                        .setUrl(successUrl + "?orderId=" + orderId)
                                         .build())
-                                .build()).build();
+                                .build())
+                        .setAfterCompletion(PaymentLinkCreateParams.AfterCompletion.builder()
+                                .setType(PaymentLinkCreateParams.AfterCompletion.Type.REDIRECT)
+                                .setRedirect(PaymentLinkCreateParams.AfterCompletion.Redirect.builder()
+                                        .setUrl(failureUrl + "?orderId=" + orderId)
+                                        .build())
+                                .build())
+                        .build();
 
         PaymentLink paymentLink = PaymentLink.create(paymentLinkCreateParams);
-        return paymentLink.getUrl();
+        return Map.of("paymentUrl", paymentLink.getUrl());
     }
 }

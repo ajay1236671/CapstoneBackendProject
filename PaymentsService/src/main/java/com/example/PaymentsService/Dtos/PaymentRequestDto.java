@@ -4,8 +4,17 @@ package com.example.PaymentsService.Dtos;
 public class PaymentRequestDto {
     private String email;
     private String phoneNumber;
-    private Long amount;
-    private String orderId;
+    private double totalAmount;
+    private Long orderId;
+    private Long productId;
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
 
     public String getEmail() {
         return email;
@@ -23,19 +32,19 @@ public class PaymentRequestDto {
         this.phoneNumber = phoneNumber;
     }
 
-    public Long getAmount() {
-        return amount;
+    public double getTotalAmount() {
+        return totalAmount;
     }
 
-    public void setAmount(Long amount) {
-        this.amount = amount;
+    public void setTotalAmount(Long totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
-    public String getOrderId() {
+    public Long getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(String orderId) {
+    public void setOrderId(Long orderId) {
         this.orderId = orderId;
     }
 }

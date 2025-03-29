@@ -6,18 +6,16 @@ import com.stripe.exception.StripeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class PaymentService {
 
     private PaymentGateway paymentGateway;
 
 
-    public String initiatePayment(String orderId, String email, String phoneNumber, Long amount) throws StripeException {
-        // Order order = orderService.getOrderDetails(orderId)
-        // Long amount = order.getAmount();
-        // double amount = 10.10; // store number * 100
-        // String orderId, String email, String phoneNumber, Long amount
-//        Long amount = 1010L; // 10.00 => 1000
+    public Map<String, String> initiatePayment(Long orderId, double amount) throws StripeException {
+
         paymentGateway = new stripePaymentGateway();
         return paymentGateway.generatePaymentLink(orderId, amount) ;
     }

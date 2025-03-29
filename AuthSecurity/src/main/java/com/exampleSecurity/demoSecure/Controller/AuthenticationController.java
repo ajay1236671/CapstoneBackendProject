@@ -81,6 +81,42 @@ public class AuthenticationController {
         }
     }
 
+    @PostMapping("/validate/admin")
+    public ResponseEntity<Map<String, Object>> validateForAdminRole(@RequestHeader("TokenAuthorization") String authHeader) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                response.put("valid", false);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            final String jwt = authHeader.substring(7);
+            final String userEmail = jwtService.extractUsername(jwt);
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                List<String> rolesList = userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList());
+                if (!(rolesList.contains("ADMIN") || rolesList.contains("ROLE_SUPER_ADMIN"))) {
+                    response.put("valid", false);
+                } else {
+
+                    response.put("valid", true);
+                    response.put("userId", userEmail);  // Use userEmail or userId from database
+                    response.put("roles", rolesList);
+                }
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("valid", false);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+        } catch (Exception e) {
+            response.put("valid", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
     @PostMapping("/adminvalidate")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Map<String, Object>> validateForAdmin(@RequestHeader("TokenAuthorization") String authHeader) {

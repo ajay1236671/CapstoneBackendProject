@@ -19,7 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
-                .addPathPatterns("/products/**") // Protect all product endpoints
+                .addPathPatterns("/payments/**") // Protect all product endpoints
                 .excludePathPatterns("/public/**"); // Allow some endpoints to be public if needed
     }
 }

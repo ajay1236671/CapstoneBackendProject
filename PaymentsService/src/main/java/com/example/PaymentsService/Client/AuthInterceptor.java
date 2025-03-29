@@ -45,7 +45,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         headers.set("TokenAuthorization", authHeader);
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(Map.of("token", token), headers);
 
-        ResponseEntity<Map> validationResponse = restTemplate.postForEntity("http://localhost:8888/auth/validate", requestEntity, Map.class);
+        ResponseEntity<Map> validationResponse = restTemplate.postForEntity(System.getenv("AUTH_URL") + "/auth/validate", requestEntity, Map.class);
         String errorMsg = "Invalid token";
         if (validationResponse.getStatusCode() == HttpStatus.OK && Boolean.TRUE.equals(validationResponse.getBody().get("valid"))) {
             request.setAttribute("userId", validationResponse.getBody().get("userId"));
