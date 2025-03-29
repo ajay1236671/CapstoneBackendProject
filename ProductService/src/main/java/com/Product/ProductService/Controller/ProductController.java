@@ -57,12 +57,5 @@ public class ProductController {
         return productService.getProductsByCategory(category, pageable);
     }
 
-
-
-    @GetMapping("/webhook")
-    public ResponseEntity<?> paymentResponse(HttpServletRequest request){
-
-        return ResponseEntity.ok("PAYMENT DONE");
-    }
 }
 
