@@ -41,10 +41,6 @@ User -> API Gateway -> Microservices -> Database/Cache
 
 ### Steps to Run Locally
 1. Clone the repository:
-   ```sh
-   git clone https://github.com/your-repo/ecommerce-microservices.git
-   cd ecommerce-microservices
-   ```
 2. Configure environment variables in `.env` or `application.properties`.
 3. Start MySQL and Redis servers.
 4. Build and run each microservice
